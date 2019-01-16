@@ -1,19 +1,19 @@
-#2019
+# 2019
 
 Kof's sketchbook year 2019, build with [Processing](http://processing.org) software.
 
 The sketches are organized by months of year. This structure can make a feel of a superior organization, which in fact is false, it is rather mess with all ideas and unfinished concepts placed in kind of plain time-line space. Feel free to dig in and recycle anything useful for you.. when you find something like this, do not hesitate to contact me.
 
-##Sketches Running On-line
+## Sketches Running On-line
 
 There is a kind of selection hosted on [Open Processing](http://www.openprocessing.org/user/3942), these are mostly a bit *obsolete* Java applets selected for being able to run in a browser.
 
-##Rendered Outputs
+## Rendered Outputs
 
 Other way of on-line presentation is quite heavily re-compressed (h264) videos, they are more widely accepted due to more "standard media form". The most of these outputs are available on [Vimeo](https://vimeo.com/kof/videos).
 
 
-##Archival Code Bits and Pieces
+## Archival Code Bits and Pieces
 
 If you really feel like digging, there are more historical *pieces*. To travel back in time in repositories:
 
