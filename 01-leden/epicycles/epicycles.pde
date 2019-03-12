@@ -1,7 +1,6 @@
 import java.util.Collections;
 import java.util.Comparator;
 
-
 float re, im;
 ArrayList pos;
 int N = 200;
@@ -17,24 +16,25 @@ void setup() {
 
   fourier = new ArrayList();
   pos = new ArrayList();
+<<<<<<< HEAD
   for(int i = 0 ; i < N;i++){
   pos.add(new PVector(
   (noise(i/100.0)-0.5)*100,
   i-100
   ));
 }
+=======
+  
+>>>>>>> d3d486e91e626a85521330507517c7aa935da182
   reset();
 }
-
-
-
 
 void mouseReleased(){
   reset();
 }
 
 void draw() {
-  
+
   background(0);
   translate(width/2,height/2);
   PVector vx = drawFourier(0, 0, 0, fourier);
@@ -55,14 +55,27 @@ void draw() {
   dt = TWO_PI / (float)pos.size();
   time += dt;
 
+  if(time>TWO_PI){
+    reset();
+  }
+
 }
 
 void reset(){
-  time=0;//time-TWO_PI;
+  //time=time-TWO_PI;
+ // pos = new ArrayList();
+  //for(int i = 0 ; i < N;i++){
+    pos.add(new PVector(
+          (noise(frameCount/200.0,0)-0.5)*400.0,
+          (noise(0,frameCount/200.0)-0.5)*400.0
+          ));
+  //}
+  
+    if(pos.size()>N)
+  pos.remove(0);
+
   fourier = dft(pos);
 }
-
-    
 
 PVector drawFourier(float cx, float cy, float rotation, ArrayList fourier) {
   float x = cx;
@@ -97,13 +110,18 @@ ArrayList dft(ArrayList pos) {
   for (int k = 0; k < N; k++) {
     re = 0;
     im = 0;
+
     for (int n = 0; n < N; n++) {
       PVector tmp = (PVector)pos.get(n);
       float phiX = (TWO_PI * k * (n)) / (N);
-      float phiY = (TWO_PI * k * (n)) / (N) + HALF_PI;
 
+<<<<<<< HEAD
       re += tmp.x * cos(phiX) + tmp.y * cos(phiY);
       im -= tmp.x * sin(phiX) + tmp.y * sin(phiY);
+=======
+      re += tmp.x * cos(phiX);
+      im -= tmp.x * sin(phiX);
+>>>>>>> d3d486e91e626a85521330507517c7aa935da182
     }
 
     re = re / (N);
@@ -115,10 +133,33 @@ ArrayList dft(ArrayList pos) {
 
     X.add( new Epicycle(re, im, freq, amp, phase) );
 
+    re = 0;
+    im = 0;
+
+    for (int n = 0; n < N; n++) {
+      PVector tmp = (PVector)pos.get(n);
+      float phiY = (TWO_PI * k * (n)) / (N) + HALF_PI;
+
+      re += tmp.y * cos(phiY);
+      im -= tmp.y * sin(phiY);
+    }
+
+    re = re / (N);
+    im = im / (N);
+
+    freq = k;
+    amp = sqrt(re * re + im * im);
+    phase = atan2(im, re);
+
+    X.add( new Epicycle( re, im, freq, amp, phase ) );
+
   }
 
+  try{
   Collections.sort(X, new CustomComparator());
-
+  }catch(IllegalArgumentException e){
+    println("error in sort");
+  }
   return X;
 }
 
