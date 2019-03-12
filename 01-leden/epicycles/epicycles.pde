@@ -53,11 +53,17 @@ void draw() {
 }
 
 void reset(){
-  time=time-TWO_PI;
-  pos = new ArrayList();
-  for(int i = 0 ; i < N;i++){
-    pos.add(new PVector(cos(i/10.0*TWO_PI)*200.0,sin(i/11.0*TWO_PI)*200.0));
-  }
+  //time=time-TWO_PI;
+ // pos = new ArrayList();
+  //for(int i = 0 ; i < N;i++){
+    pos.add(new PVector(
+          (noise(frameCount/200.0,0)-0.5)*400.0,
+          (noise(0,frameCount/200.0)-0.5)*400.0
+          ));
+  //}
+  
+    if(pos.size()>N)
+  pos.remove(0);
 
   fourier = dft(pos);
 }
@@ -131,12 +137,15 @@ ArrayList dft(ArrayList pos) {
     amp = sqrt(re * re + im * im);
     phase = atan2(im, re);
 
-    X.add( new Epicycle(re, im, freq, amp, phase) );
+    X.add( new Epicycle( re, im, freq, amp, phase ) );
 
   }
 
-  //Collections.sort(X, new CustomComparator());
-
+  try{
+  Collections.sort(X, new CustomComparator());
+  }catch(IllegalArgumentException e){
+    println("error in sort");
+  }
   return X;
 }
 
