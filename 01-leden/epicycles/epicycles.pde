@@ -20,7 +20,7 @@ void setup() {
   for(int i = 0 ; i < N;i++){
   pos.add(new PVector(
   (noise(i/100.0)-0.5)*100,
-  i-50
+  i-100
   ));
 }
   reset();
@@ -103,7 +103,7 @@ ArrayList dft(ArrayList pos) {
       float phiY = (TWO_PI * k * (n)) / (N) + HALF_PI;
 
       re += tmp.x * cos(phiX) + tmp.y * cos(phiY);
-      im -= tmp.x * sin(phiX) - tmp.y * sin(phiY);
+      im -= tmp.x * sin(phiX) + tmp.y * sin(phiY);
     }
 
     re = re / (N);
