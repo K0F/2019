@@ -1,9 +1,9 @@
 OscRecordReader oscr;
 
-float SCALE = 20.0;
+float SCALE = 8.0;
 
 void setup() {
-  size(640, 640, P3D);
+  size(640, 640, OPENGL);
   oscr = new OscRecordReader("/home/kof/1554146193_oscrec.txt");
 }
 
@@ -11,7 +11,7 @@ void draw() {
   background(255);
   stroke(0);
   pushMatrix();
-  rotateY(frameCount/600.0*TWO_PI);
+  rotateY(frameCount/6000.0*TWO_PI);
   oscr.draw();
   popMatrix();
 }
@@ -25,24 +25,33 @@ class OscRecordReader {
 
   PVector acc,vel,pos;
   ArrayList positions;
+  double time = 0;
 
   OscRecordReader(String _filename) {
     
     filename=_filename;
     raw = loadStrings(filename);
     
-    pos = new PVector(0,0,0);
-    acc = new PVector(0,0,0);
-    vel = new PVector(0,0,0);
     
     parse();
+    
+    Record first = (Record)(data.get(0));
+    acc = new PVector(first.acc.x,first.acc.y,first.acc.z);
+    pos = new PVector(0,0,0);
+    vel = new PVector(0,0,0);
     
     
     positions = new ArrayList();
     for (int i = 0; i < data.size(); i++) {
       Record tmp = (Record)data.get(i);
       compute(tmp);
+      
+      println(tmp.time);
+     // time=tmp.time;
+   
+      
       positions.add(pos.copy());
+     
     }
   }
 
@@ -67,9 +76,10 @@ class OscRecordReader {
     
     pushMatrix();
     translate(width/2,height/2);
-    
     scale(SCALE);
     strokeWeight(1/SCALE);
+    
+    /*
     beginShape();
     for (int i = 0; i < data.size(); i++) {
       stroke(0);
@@ -77,23 +87,28 @@ class OscRecordReader {
       vertex(tmp.x, tmp.y, tmp.z);
     };
     endShape();
+   */
    
     beginShape();
     for (int i = 0; i < data.size(); i++) {
       Record tmp = (Record)data.get(i);
-      stroke(255,0,0,50);
+      stroke(0,25);
       vertex(tmp.x, tmp.y, tmp.z);
     };
     endShape();
+   
     popMatrix();
   }
   
   void compute(Record rec){
-   acc = rec.acc.copy().sub(acc.copy()).copy();
+   acc = new PVector(rec.acc.x,rec.acc.y,rec.acc.z );
+   //pos = new PVector(acc.x,acc.y,acc.z);
+   //rec.acc.copy().sub(acc.copy()).copy();
    vel.add(acc);
    pos.add(vel);
    vel.mult(0.9806);
-  }
+   // pos.mult(0.9806);
+}
 }
 
 class Record {
