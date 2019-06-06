@@ -105,8 +105,8 @@ ArrayList dft(ArrayList pos) {
       PVector tmp = (PVector)pos.get(n);
       float phiX = (TWO_PI * k * (n)) / (N);
 
-      re += tmp.x * cos(phiX);
-      im -= tmp.x * sin(phiX);
+      re += tmp.x * cos(phiX) + tmp.y * cos(phiY);
+      im -= tmp.x * sin(phiX) + tmp.y * sin(phiY);
     }
 
     re = re / (N);
