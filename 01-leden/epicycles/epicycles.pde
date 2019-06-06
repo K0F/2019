@@ -16,16 +16,6 @@ void setup() {
 
   fourier = new ArrayList();
   pos = new ArrayList();
-<<<<<<< HEAD
-  for(int i = 0 ; i < N;i++){
-  pos.add(new PVector(
-  (noise(i/100.0)-0.5)*100,
-  i-100
-  ));
-}
-=======
-  
->>>>>>> d3d486e91e626a85521330507517c7aa935da182
   reset();
 }
 
@@ -70,7 +60,7 @@ void reset(){
           (noise(0,frameCount/200.0)-0.5)*400.0
           ));
   //}
-  
+
     if(pos.size()>N)
   pos.remove(0);
 
@@ -115,13 +105,8 @@ ArrayList dft(ArrayList pos) {
       PVector tmp = (PVector)pos.get(n);
       float phiX = (TWO_PI * k * (n)) / (N);
 
-<<<<<<< HEAD
-      re += tmp.x * cos(phiX) + tmp.y * cos(phiY);
-      im -= tmp.x * sin(phiX) + tmp.y * sin(phiY);
-=======
       re += tmp.x * cos(phiX);
       im -= tmp.x * sin(phiX);
->>>>>>> d3d486e91e626a85521330507517c7aa935da182
     }
 
     re = re / (N);
@@ -178,7 +163,7 @@ class Epicycle {
   float getAmp(){
     return amp;
   }
-} 
+}
 
 public class CustomComparator implements Comparator<Epicycle> {
   @Override

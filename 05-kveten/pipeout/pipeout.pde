@@ -2,13 +2,17 @@
 //import processing.opengl.*;
 import java.io.RandomAccessFile;
 
-RandomAccessFile pipe; 
+RandomAccessFile pipe;
 byte raw[];
 
 String tc;
+PShader glsl;
+int rate = 25;
+
+
 
 void setup() {
-  size(720, 576, P2D);
+  size(1920, 1080, P2D);
   smooth();
 
   raw = new byte[width*height*3];
@@ -20,16 +24,29 @@ void setup() {
   catch(Exception e) {
     println("error opening pipe: "+e);
   }
-  frameRate(60);
+
+  textFont(createFont("Dialog.bold",12,false));
+  textAlign(CENTER);
+
+  frameRate(rate);
   rectMode(CENTER);
-  
+
   for(int i = 0 ; i < width;i++){
     stroke( map(i, 0,width,0,255) );
-      line(i,0,i,height); 
+      line(i,0,i,height);
   }
   fill(0);
   noStroke();
- 
+
+  glsl = loadShader("one.glsl");
+
+}
+
+void keyPressed(){
+  if(key==' '){
+  glsl = loadShader("one.glsl");
+  }
+
 }
 
 int X[]={0,0,0,0,0,0,3,7,19,13,-7,-100,100};
@@ -39,21 +56,10 @@ int Y[]={0,0,0,0,3,1,1,1,1,1,0,0,0,17,4,100,-100};
 
 void draw() {
   //background(0);
-  
-  imageMode(CENTER);
-  pushMatrix();
-  translate(width/2,height/2);
-  //rotate(radians(-0.001));
-  image(g,0,1);
-  popMatrix();
-  
-   ellipse(
-   width/2+cos(frameCount/250.0*TWO_PI)*150.0,
-   height/2+sin(frameCount/250.0*TWO_PI)*150.0
-   ,height/3.0,height/3.0);
-  noStroke();
-  fill((sin(frameCount/600.0)+1.0)*127.0,75);
-  
+
+ glsl.set("time",frameCount+0.0);
+ filter(glsl);
+  drawTc();
   dump();
 
 }
@@ -63,16 +69,45 @@ int c=0;
 void dump(){
   loadPixels();
   for (int i = 0 ; i < pixels.length;i++) {
-    raw[i*3]= (byte)(pixels[i] >> 16 & 0XFF);
-    raw[i*3+1]= (byte)(pixels[i] >> 8 & 0XFF);
-    raw[i*3+2]= (byte)(pixels[i] & 0XFF);
+    raw[i*3]= (byte)(pixels[i] >> 16 & 0xFF);
+    raw[i*3+1]= (byte)(pixels[i] >> 8 & 0xFF);
+    raw[i*3+2]= (byte)(pixels[i] & 0xFF);
   }
   try {
     pipe.write(raw);
-  } 
+  }
   catch (Exception e) {
     e.printStackTrace();
   }
+
+}
+
+int frames,seconds,minutes,hours;
+void drawTc(){
+
+  frames++;
+
+  if(frames>rate-1){
+    frames=0;
+    seconds++;
+  }
+
+  if(seconds>59){
+   seconds=0;
+   minutes++;
+   }
+
+  if(hours>23){
+   hours=0;
+  }
+
+
+  tc = nf(hours,2)+":"+nf(minutes,2)+":"+nf(seconds,2)+":"+nf(frames,2);
+  fill(0);
+  noStroke();
+  rect(width/2,35,90,20);
+  fill(255);
+  text(tc,width/2,40);
 
 }
 
@@ -84,4 +119,5 @@ void exit() {
     // TODO Auto-generated catch block
     e.printStackTrace();
   }
+  super.exit();
 }
