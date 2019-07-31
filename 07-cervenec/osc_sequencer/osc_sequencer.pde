@@ -9,13 +9,15 @@ NetAddress myRemoteLocation;
 OscThread osc;
 
 String [] names = {"/a","/b","/c","/d","/e","/f","/g","/h"};
-int size = 32;
+int size = 64;
 int tracks = 8;
 float grid[][];
 int sel = 0;
+float speed = 8.0;
+double bpm = 120.0;
 
 void setup() {
-  size(640,240);
+  size(800,240);
   textFont(createFont("Semplice Regular",8,false));
   // create new thread running at 160bpm, bit of D'n'B
 
@@ -25,7 +27,7 @@ void setup() {
   myRemoteLocation = new NetAddress("127.0.0.1",10000);
   grid = new float[tracks][size];  
 
-  osc=new OscThread(120);
+  osc=new OscThread(bpm);
   osc.start();
 }
 
@@ -39,8 +41,9 @@ void draw() {
 
   fill(255);
   text("OSC out:",width-56,16);
-  fill(127);
-  rect(sel*12+18,28,14,height);
+  text("BPM: "+bpm,16,16);
+  fill(250);
+  rect(sel*12+18,28,14,height-28-10);
   for(int ii = 0; ii < tracks;ii++){
     fill(255);
     text(names[ii],5,ii*12+39);
@@ -77,14 +80,29 @@ void keyPressed(){
   if(key == ' ')    
     reset();
 
+  if(key =='=')
+    bpm++;
+
+  if(key =='-')
+    bpm--;
+
+  if(keyCode==DELETE){
+    for(int ii = 0; ii < grid.length;ii++)
+    for(int i = 0; i < grid[ii].length;i++)
+      grid[ii][i] = 0;
+  }
 }
 
 void oscEvent(OscMessage theOscMessage) {
   /* print the address pattern and the typetag of the received OscMessage */
   println("### received an osc message.");
   println(" addrpattern: "+theOscMessage.addrPattern());
-if(theOscMessage.addrPattern().equals("/reset"))
+
+  if(theOscMessage.addrPattern().equals("/reset"))
 reset();
+  
+  if(theOscMessage.addrPattern().equals("/bpm"))
+    bpm = (double)theOscMessage.get(0).floatValue();
 
 }
 
@@ -101,9 +119,11 @@ class OscThread extends Thread {
   boolean isActive=true;
   double interval;
   double total;
-  OscThread(double bpm) {
+
+  OscThread(double _bpm) {
+    bpm = _bpm;
     // interval currently hard coded to quarter beats
-    interval = 1000.0 / (bpm / 60.0 * 4.0); 
+    interval = 1000.0 / (bpm / 60.0 * speed); 
     previousTime=System.nanoTime();
   }
 
@@ -111,6 +131,7 @@ class OscThread extends Thread {
     try {
       while(isActive) {
         // calculate time difference since last beat & wait if necessary
+        interval = 1000.0 / (bpm / 60.0 * speed); 
         double timePassed=(System.nanoTime()-previousTime)*1.0e-6;
         while(timePassed<interval) {
           timePassed=(System.nanoTime()-previousTime)*1.0e-6;
