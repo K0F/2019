@@ -4,11 +4,11 @@ import oscP5.*;
 import netP5.*;
 
 OscP5 oscP5;
-NetAddress myRemoteLocation;
+NetAddress sc;
 
 OscThread osc;
 
-String [] names = {"/a","/b","/c","/d","/e","/f","/g","/h"};
+String [] names = {"a","b","c","d","e","f","g","h"};
 int size = 64;
 int tracks = 8;
 float grid[][];
@@ -27,7 +27,7 @@ void setup() {
   textFont(createFont("Semplice Regular",8,false));
 
   oscP5 = new OscP5(this,12000);
-  myRemoteLocation = new NetAddress("127.0.0.1",10000);
+  sc = new NetAddress("127.0.0.1",57120);
   grid = new float[tracks][size];
 
   osc=new OscThread(bpm);
@@ -42,6 +42,32 @@ void setup() {
   editor = (Editor)editors.get(tab);
 
 }
+
+////////////////////////////////////////////////////
+
+
+void msg(String obj,String key,float val){
+  oscP5.send("/oo",new Object[] {obj,"set",key,val},sc);
+}
+
+void execute(String data){
+  oscP5.send("/oo_i",new Object[]{data},sc);
+}
+
+void freeAll(){
+  oscP5.send("/oo_i",new Object[]{"s.freeAll;"},sc);
+}
+
+void stop(){
+  //saveProject("default.txt");
+  freeAll();
+  if (osc!=null) osc.isActive=false;
+  super.stop();
+}
+
+///
+
+
 
 // sequencer offsets
 int sx = 10;
@@ -109,8 +135,18 @@ class Editor{
     id = _id;
     name = ""+_name;
 
-    setText("(\nSynth("+name+",{\n   var sig = SinOsc.ar(220);\n  };\n).add();\n)");
+    setText("(\nSynthDef('"+name+"',{|sus=1.0|\n   var env = EnvGen.ar(Env.new([0,1,0],[0.02,sus]),doneAction:2);\n    var sig = SinOsc.ar(50,env*2pi);\n sig = sig * env; Out.ar(0,sig); }\n).add();\n)");
 
+  }
+
+  String getText(){
+
+    String tmp = "";
+    for(int i =0 ; i < text.size();i++){
+      String line = (String)text.get(i);
+      tmp+=line;
+    }
+    return tmp;
   }
 
   void setText(String _text){
@@ -176,14 +212,24 @@ void mouseClicked(){
   }
 }
 
-// also shutdown the osc thread when the applet is stopped
-public void stop() {
-  if (osc!=null) osc.isActive=false;
-  super.stop();
+
+boolean controlDown = false;
+
+
+void keyReleased(){
+  if(key==CODED){
+    if(keyCode==SHIFT)
+      controlDown=false;
+  }
 }
 
 void keyPressed(){
   // println(keyCode);
+  
+  if(keyCode==CONTROL){
+    controlDown = true;
+  }
+  
   if(keyCode == 155)
     reset();
 
@@ -273,6 +319,15 @@ void keyPressed(){
   }
 
   //broken
+  
+  println(keyCode);
+  //F5
+  if(keyCode==116){
+    String tmp = editor.getText();
+    execute(tmp);
+    keyPressed = false;
+  }
+  
   if(keyCode==ENTER){
     String current = (String)editor.text.get(editor.ln);
     editor.text.set(editor.ln,current.substring(0,editor.carret));
@@ -281,8 +336,8 @@ void keyPressed(){
     editor.ln++;
     editor.carret=0;
   }
-
-  if(keyCode==DELETE){
+  
+   if(keyCode==DELETE){
 
     String current = (String)editor.text.get(editor.ln);
 
@@ -353,10 +408,11 @@ class OscThread extends Thread {
         for(int ii = 0; ii < tracks;ii++){
           if(grid[ii][sel]>0){
             clock_led = 255;
-            OscMessage myMessage = new OscMessage(names[ii]);
-            myMessage.add(grid[ii][sel]);
-            oscP5.send(myMessage, myRemoteLocation);
-            println("OSC "+names[ii]+" "+grid[ii][sel]+" time: "+total+"ms");
+            //OscMessage myMessage = new OscMessage(names[ii]);
+            //myMessage.add(grid[ii][sel]);
+            //oscP5.send(myMessage, sc);
+            execute( "Synth.new('"+names[ii]+"');" );
+            println("OSC /"+names[ii]+" "+grid[ii][sel]+" time: "+total+"ms");
             Editor e = (Editor)editors.get(ii);
             e.bang = true;
           }
