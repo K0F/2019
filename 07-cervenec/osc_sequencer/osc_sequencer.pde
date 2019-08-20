@@ -25,7 +25,6 @@ void setup() {
   size(826,720);
   // saveStrings("fonts.txt",PFont.list());
   textFont(createFont("Semplice Regular",8,false));
-  // create new thread running at 160bpm, bit of D'n'B
 
   oscP5 = new OscP5(this,12000);
   myRemoteLocation = new NetAddress("127.0.0.1",10000);
@@ -36,11 +35,11 @@ void setup() {
 
   editors = new ArrayList();
 
-for(int i = 0; i < names.length;i++){
-  editors.add(new Editor(names[i],i));
-}
+  for(int i = 0; i < names.length;i++){
+    editors.add(new Editor(names[i],i));
+  }
 
-editor = (Editor)editors.get(tab);
+  editor = (Editor)editors.get(tab);
 
 }
 
@@ -56,7 +55,7 @@ void draw() {
   fill(osc.clock_led);
   stroke(255);
   rect(width-15,10,5,5);
-  tt = pow((sin((float)osc.total/1000.0*((float)bpm/60.0)*TWO_PI+HALF_PI)+1)/2.0,3)*255;
+  tt = pow((cos((float)osc.total/1000.0*((float)bpm/60.0)*TWO_PI-HALF_PI)+1)/2.0,3)*255;
   fill(tt);
   rect(width-25,10,5,5);
   // sequencer
@@ -88,9 +87,9 @@ void draw() {
 
 
   for(int i = 0 ; i < editors.size();i++){
-Editor tmp = (Editor)editors.get(i);
-  tmp.draw();
-}
+    Editor tmp = (Editor)editors.get(i);
+    tmp.draw();
+  }
 
   if(osc.clock_led>0)
     osc.clock_led-=40;
@@ -109,8 +108,15 @@ class Editor{
   Editor(String _name,int _id){
     id = _id;
     name = ""+_name;
+
+    setText("(\nSynth("+name+",{\n   var sig = SinOsc.ar(220);\n  };\n).add();\n)");
+
+  }
+
+  void setText(String _text){
+    String raw[] = split(_text,'\n');
     text=new ArrayList();
-    String raw[] = split("(\nSynth("+name+",{\n   var sig = SinOsc.ar(220);\n  };\n).add();\n)",'\n');
+
     for(int i = 0; i < raw.length;i++){
       text.add(new String(raw[i]));
     }
@@ -139,25 +145,25 @@ class Editor{
     fill(255);
     text(name,30+id*w+w/2,178);
     textAlign(LEFT);
-if(id==tab){
-pushMatrix();
+    if(id==tab){
+      pushMatrix();
 
-//translate(id*180,0);
+      //translate(id*180,0);
 
-    for(int i = 0 ; i < text.size();i++){
-      String curText = (String)text.get(i);
-    fill(255);
-    text(curText, 40, 196 + ( i * 12 ) );
-    if(i==ln){
-    noStroke();
-      fill(255,tt);
-      rect(textWidth( curText.substring(0,carret) ) + 40, 196 + (ln*12) + 3, 2 ,-12 );
+      for(int i = 0 ; i < text.size();i++){
+        String curText = (String)text.get(i);
+        fill(255);
+        text(curText, 40, 196 + ( i * 12 ) );
+        if(i==ln){
+          noStroke();
+          fill(255,tt);
+          rect(textWidth( curText.substring(0,carret) ) + 40, 196 + (ln*12) + 3, 2 ,-12 );
+        }
+      }
+      popMatrix();
+
     }
-    }
-    popMatrix();
-
   }
-}
 }
 
 void mouseClicked(){
@@ -193,36 +199,38 @@ void keyPressed(){
         grid[ii][i] = 0;
   }
 
-/*
-  if(keyCode==TAB){
-    String current = (String)editor.text.get(editor.ln);
-    current = current.substring(0,editor.carret) + "  " + current.substring(editor.carret,((String)editor.text.get(editor.ln)).length());
-    editor.text.set(editor.ln,current);
-    editor.carret++;
+  /*
+     if(keyCode==TAB){
+     String current = (String)editor.text.get(editor.ln);
+     current = current.substring(0,editor.carret) + "  " + current.substring(editor.carret,((String)editor.text.get(editor.ln)).length());
+     editor.text.set(editor.ln,current);
+     editor.carret++;
 
-  }
-*/
+     }
+   */
 
   if(keyCode==LEFT){
-if(editor.carret==0 && editor.ln > 0){
-  editor.carret=((String)editor.text.get(editor.ln-1)).length();
-  editor.ln--;
-}else{
-  editor.carret--;
-}
+
+    if(editor.carret==0 && editor.ln > 0){
+      editor.carret=((String)editor.text.get(editor.ln-1)).length();
+      editor.ln--;
+    }else{
+      editor.carret--;
+    }
     editor.carret=constrain(editor.carret,0,((String)editor.text.get(editor.ln)).length());
     editor.ln=constrain(editor.ln,0,editor.text.size()-1);
 
   }
 
   if(keyCode==RIGHT){
-if(editor.carret >= ((String)editor.text.get(editor.ln)).length() && editor.ln < editor.text.size()){
-  editor.carret=0;
-  editor.ln++;
-}else{
-  editor.carret++;
-}
-editor.ln=constrain(editor.ln,0,editor.text.size()-1);
+
+    if(editor.carret >= ((String)editor.text.get(editor.ln)).length() && editor.ln < editor.text.size()){
+      editor.carret=0;
+      editor.ln++;
+    }else{
+      editor.carret++;
+    }
+    editor.ln=constrain(editor.ln,0,editor.text.size()-1);
     editor.carret=constrain(editor.carret,0,((String)editor.text.get(editor.ln)).length());
 
 
@@ -253,25 +261,25 @@ editor.ln=constrain(editor.ln,0,editor.text.size()-1);
       editor.ln--;
 
     }else if(editor.carret>0){
-    current = current.substring(0,editor.carret-1)+current.substring(editor.carret,((String)editor.text.get(editor.ln)).length());
-    editor.text.set(editor.ln,current);
+      current = current.substring(0,editor.carret-1)+current.substring(editor.carret,((String)editor.text.get(editor.ln)).length());
+      editor.text.set(editor.ln,current);
 
-    editor.carret--;
-    editor.carret=constrain(editor.carret,0,((String)editor.text.get(editor.ln)).length());
-      }
+      editor.carret--;
+      editor.carret=constrain(editor.carret,0,((String)editor.text.get(editor.ln)).length());
+    }
 
 
 
   }
 
-//broken
+  //broken
   if(keyCode==ENTER){
     String current = (String)editor.text.get(editor.ln);
     editor.text.set(editor.ln,current.substring(0,editor.carret));
 
     editor.text.add(editor.ln+1,current.substring(editor.carret,current.length()) );
-editor.ln++;
-        editor.carret=0;
+    editor.ln++;
+    editor.carret=0;
   }
 
   if(keyCode==DELETE){
