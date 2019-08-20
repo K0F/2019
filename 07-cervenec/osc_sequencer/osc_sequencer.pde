@@ -15,15 +15,16 @@ float grid[][];
 int sel = 0;
 float speed = 8.0;
 double bpm = 120.0;
+int tab = 0;
 
 ArrayList editors;
 Editor editor;
 
 
 void setup() {
-  size(1366,720);
-  saveStrings("fonts.txt",PFont.list());
-  textFont(createFont("Monaco for Powerline",9,false));
+  size(826,720);
+  // saveStrings("fonts.txt",PFont.list());
+  textFont(createFont("Semplice Regular",8,false));
   // create new thread running at 160bpm, bit of D'n'B
 
   oscP5 = new OscP5(this,12000);
@@ -33,15 +34,18 @@ void setup() {
   osc=new OscThread(bpm);
   osc.start();
 
-  editor = new Editor("/a",0);
-
   editors = new ArrayList();
-  editors.add(editor);
+
+for(int i = 0; i < names.length;i++){
+  editors.add(new Editor(names[i],i));
+}
+
+editor = (Editor)editors.get(tab);
 
 }
 
 // sequencer offsets
-int sx = 270;
+int sx = 10;
 int sy = 10;
 
 float tt;
@@ -77,7 +81,16 @@ void draw() {
 
   popMatrix();
 
-  editor.draw();
+  fill(35);
+  rect(30,180,width-60,500);
+
+  editor = (Editor)editors.get(tab);
+
+
+  for(int i = 0 ; i < editors.size();i++){
+Editor tmp = (Editor)editors.get(i);
+  tmp.draw();
+}
 
   if(osc.clock_led>0)
     osc.clock_led-=40;
@@ -90,41 +103,61 @@ class Editor{
   int ln;
   String name;
   int id;
+  boolean bang = false;
+  int fade = 0;
 
   Editor(String _name,int _id){
     id = _id;
     name = ""+_name;
     text=new ArrayList();
-    String raw[] = split("(\nSynth(\\a,{\n   var sig = SinOsc.ar(220);\n  };\n).add();\n)",'\n');
+    String raw[] = split("(\nSynth("+name+",{\n   var sig = SinOsc.ar(220);\n  };\n).add();\n)",'\n');
     for(int i = 0; i < raw.length;i++){
-      text.add(new String(raw[ i ]));
+      text.add(new String(raw[i]));
     }
   }
 
   void draw(){
     stroke(255);
-    fill(35);
+
 
     textAlign(CENTER);
     int w = 25;
-    rect(30,180,width-60,500);
+
+    if(bang){
+      fade=255;
+      bang = false;
+    }
+
+    fill(tab==id?150:25);
     rect(30+id*w,180,w,-12);
+
+    noStroke();
+    fill(#ffcc00,fade);
+    if(fade>0)fade-=10;
+    rect(30+id*w,180,w,-12);
+
     fill(255);
     text(name,30+id*w+w/2,178);
     textAlign(LEFT);
+if(id==tab){
+pushMatrix();
+
+//translate(id*180,0);
 
     for(int i = 0 ; i < text.size();i++){
       String curText = (String)text.get(i);
     fill(255);
     text(curText, 40, 196 + ( i * 12 ) );
     if(i==ln){
-noStroke();
+    noStroke();
       fill(255,tt);
       rect(textWidth( curText.substring(0,carret) ) + 40, 196 + (ln*12) + 3, 2 ,-12 );
     }
     }
-  }
+    popMatrix();
 
+  }
+}
 }
 
 void mouseClicked(){
@@ -144,10 +177,10 @@ public void stop() {
 }
 
 void keyPressed(){
-  /*
-  if(key == ' ')
+  // println(keyCode);
+  if(keyCode == 155)
     reset();
-*/
+
   if(key =='=')
     bpm++;
 
@@ -171,14 +204,28 @@ void keyPressed(){
 */
 
   if(keyCode==LEFT){
-editor.carret--;
+if(editor.carret==0 && editor.ln > 0){
+  editor.carret=((String)editor.text.get(editor.ln-1)).length();
+  editor.ln--;
+}else{
+  editor.carret--;
+}
     editor.carret=constrain(editor.carret,0,((String)editor.text.get(editor.ln)).length());
+    editor.ln=constrain(editor.ln,0,editor.text.size()-1);
 
   }
 
   if(keyCode==RIGHT){
-editor.carret++;
+if(editor.carret >= ((String)editor.text.get(editor.ln)).length() && editor.ln < editor.text.size()){
+  editor.carret=0;
+  editor.ln++;
+}else{
+  editor.carret++;
+}
+editor.ln=constrain(editor.ln,0,editor.text.size()-1);
     editor.carret=constrain(editor.carret,0,((String)editor.text.get(editor.ln)).length());
+
+
 
   }
 
@@ -302,6 +349,8 @@ class OscThread extends Thread {
             myMessage.add(grid[ii][sel]);
             oscP5.send(myMessage, myRemoteLocation);
             println("OSC "+names[ii]+" "+grid[ii][sel]+" time: "+total+"ms");
+            Editor e = (Editor)editors.get(ii);
+            e.bang = true;
           }
         }
 
