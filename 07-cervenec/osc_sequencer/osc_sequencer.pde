@@ -1,5 +1,4 @@
 
-
 import oscP5.*;
 import netP5.*;
 
@@ -22,7 +21,7 @@ Editor editor;
 
 
 void setup() {
-  size(826,720);
+  size(800,720);
   // saveStrings("fonts.txt",PFont.list());
   textFont(createFont("Semplice Regular",8,false));
 
@@ -123,7 +122,6 @@ void draw() {
 
 class Editor{
   ArrayList text;
-  int tab = 0;
   int carret;
   int ln;
   String name;
@@ -135,8 +133,9 @@ class Editor{
     id = _id;
     name = ""+_name;
 
-    setText("(\nSynthDef('"+name+"',{|sus=1.0|\n   var env = EnvGen.ar(Env.new([0,1,0],[0.02,sus]),doneAction:2);\n    var sig = SinOsc.ar(50,env*2pi);\n sig = sig * env; Out.ar(0,sig); }\n).add();\n)");
+    setText("(\nSynthDef('"+name+"',{|sus=1.0|\n   var env = EnvGen.ar(Env.new([0,1,0],[0.02,sus]),doneAction:2);\n    var sig = SinOsc.ar(50,env*2pi);\n sig = sig * env; \n Out.ar(0,sig); }\n).add();\n)");
 
+    execute(getText());
   }
 
   String getText(){
@@ -243,6 +242,12 @@ void keyPressed(){
     for(int ii = 0; ii < grid.length;ii++)
       for(int i = 0; i < grid[ii].length;i++)
         grid[ii][i] = 0;
+  }
+
+  if(keyCode==9){
+    tab++;
+    if(tab>=editors.size())
+    tab=0;
   }
 
   /*
