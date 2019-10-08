@@ -1,15 +1,27 @@
 
+import oscP5.*;
+import netP5.*;
+
+OscP5 oscP5;
+NetAddress sc;
+
+String [] names = {"h","g","f","e","d","c","b","a"};
+
 Paratime time;
 int size = 16;
 int sel = 0 ;
-float speed = 1.0;
-float bpm = 135.0;
+float speed = 4.0;
+float bpm = 138.88;
 boolean grid[][];
 float send[];
 
 void setup(){
   size(320,320);
   frameRate(60); 
+
+  oscP5 = new OscP5(this,12000);
+  sc = new NetAddress("127.0.0.1",57120);
+
 
   grid = new boolean[8][size];
   send = new float[8];
@@ -97,6 +109,59 @@ void draw(){
   popMatrix();
 
 }
+boolean controlDown = false;
+
+
+void keyReleased(){
+  if(key==CODED){
+    if(keyCode==SHIFT)
+      controlDown=false;
+  }
+}
+
+void keyPressed(){
+  // println(keyCode);
+
+  if(keyCode==CONTROL){
+    controlDown = true;
+  }
+
+  if(keyCode == 155)
+    reset();
+
+  if(key =='=')
+    bpm++;
+
+  if(key =='-')
+    bpm--;
+
+  if(keyCode==DELETE){
+    for(int ii = 0; ii < grid.length;ii++)
+      for(int i = 0; i < grid[ii].length;i++)
+        grid[ii][i] = false;
+  }
+}
+ 
+void oscEvent(OscMessage theOscMessage) {
+  /* print the address pattern and the typetag of the received OscMessage */
+  println("### received an osc message.");
+  println(" addrpattern: "+theOscMessage.addrPattern());
+
+  if(theOscMessage.addrPattern().equals("/reset"))
+    reset();
+
+  if(theOscMessage.addrPattern().equals("/bpm"))
+    bpm = (float)theOscMessage.get(0).floatValue();
+
+}
+
+void reset(){
+
+  time.previousTime=System.nanoTime();
+  time.total = 0;
+  sel=0;
+}
+
 
 
 boolean over(int ii,int i){
@@ -112,6 +177,26 @@ boolean over(int ii,int i){
 
   return answer;
 }
+
+void msg(String obj,String key,float val){
+  oscP5.send("/oo",new Object[] {obj,"set",key,val},sc);
+}
+
+void execute(String data){
+  oscP5.send("/oo_i",new Object[]{data},sc);
+}
+
+void freeAll(){
+  oscP5.send("/oo_i",new Object[]{"s.freeAll;"},sc);
+}
+
+void stop(){
+  //saveProject("default.txt");
+  freeAll();
+  if (time!=null) time.isActive=false;
+  super.stop();
+}
+
 
 class Paratime extends Thread {
 
@@ -146,10 +231,11 @@ class Paratime extends Thread {
         for(int i = 0;i<8;i++){
           if(grid[i][sel]){
             send[i] = 255;
-            println("sending ["+i+"]["+sel+"]");
-          }
+            //println("sending ["+i+"]["+sel+"]");
+            execute( "Synth.new('"+names[i]+"');" );
+            println("OSC /"+names[i]+" [" + i + "][" + sel + "] time: "+total+"ms");
+         }
         }
-
 
         // insert your osc event sending code here
         // calculate real time until next beat
