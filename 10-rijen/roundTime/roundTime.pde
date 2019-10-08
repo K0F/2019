@@ -1,3 +1,4 @@
+import processing.sound.*;
 
 import oscP5.*;
 import netP5.*;
@@ -5,13 +6,17 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress sc;
 
+
+int tracks = 8;
 String [] names = {"h","g","f","e","d","c","b","a"};
+SoundFile [] sounds;
+//= new SoundFile[8];
 
 Paratime time;
 int size = 16;
 int sel = 0 ;
 float speed = 4.0;
-float bpm = 138.88;
+float bpm = 88;
 boolean grid[][];
 float send[];
 
@@ -19,12 +24,22 @@ void setup(){
   size(320,320);
   frameRate(60); 
 
+  sounds = new SoundFile[tracks];
+
+  for(int i = 0 ; i < tracks ; i++){
+    try{
+    sounds[i] = new SoundFile(this,names[i]+".mp3");
+    }catch(Exception e){
+      println(e);
+    }
+  }
+
   oscP5 = new OscP5(this,12000);
   sc = new NetAddress("127.0.0.1",57120);
 
 
-  grid = new boolean[8][size];
-  send = new float[8];
+  grid = new boolean[tracks][size];
+  send = new float[tracks];
   time=new Paratime(bpm);
   time.start();
 
@@ -229,9 +244,14 @@ class Paratime extends Thread {
           sel=0;
 
         for(int i = 0;i<8;i++){
-          if(grid[i][sel]){
+          if(grid[i][(sel+size+4)%size]){
             send[i] = 255;
             //println("sending ["+i+"]["+sel+"]");
+            try{
+            sounds[i].play();
+            }catch(Exception e){
+              println(e);
+            }
             execute( "Synth.new('"+names[i]+"');" );
             println("OSC /"+names[i]+" [" + i + "][" + sel + "] time: "+total+"ms");
          }
