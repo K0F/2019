@@ -8,7 +8,7 @@ NetAddress sc;
 OscThread osc;
 
 String [] names = {"a","b","c","d","e","f","g","h"};
-int size = 64;
+int size = 16;
 int tracks = 8;
 float grid[][];
 int sel = 0;
@@ -92,16 +92,35 @@ void draw() {
   text("OSC out:",width-56,16);
   text("BPM: "+bpm,16,16);
   fill(250);
-  rect(sel*12+18,28,14,grid.length*12+2);
+  pushMatrix();
+  translate(width/2,100);
+  
+  //rect(sel*12+18,28,14,grid.length*12+2);
+  
+  float ss = map(sel,0,grid.length,0,TWO_PI);
+
   for(int ii = 0; ii < tracks;ii++){
-    fill(255);
-    text(names[ii],5,ii*12+39);
+    //fill(255);
+    //text(names[ii],5,ii*12+39);
+
     for(int i = 0 ; i < size;i++){
-      fill(grid[ii][i]*255);
-      stroke(i%4==0?color(255,128,0,200):color(255,200));
-      rect(i*12+20,ii*12+30,10,10);
+      pushMatrix();
+      rotate(map(i,0,size,0,TWO_PI));
+      //rect(0,ii*12+30,10,10);
+      noFill();
+      //stroke(i%4==0?color(255,128,0,200):color(255,200));
+      stroke(grid[ii][i]*255);
+      strokeWeight(9);
+      strokeCap(SQUARE);
+
+      arc(0, 0, ii*20+40, ii*20+40, 0, TWO_PI/size);
+      
+      strokeWeight(1);
+      popMatrix();
     }
+
   }
+  popMatrix();
 
   popMatrix();
 
@@ -224,11 +243,11 @@ void keyReleased(){
 
 void keyPressed(){
   // println(keyCode);
-  
+
   if(keyCode==CONTROL){
     controlDown = true;
   }
-  
+
   if(keyCode == 155)
     reset();
 
@@ -247,7 +266,7 @@ void keyPressed(){
   if(keyCode==9){
     tab++;
     if(tab>=editors.size())
-    tab=0;
+      tab=0;
   }
 
   /*
@@ -324,7 +343,7 @@ void keyPressed(){
   }
 
   //broken
-  
+
   println(keyCode);
   //F5
   if(keyCode==116){
@@ -332,7 +351,7 @@ void keyPressed(){
     execute(tmp);
     keyPressed = false;
   }
-  
+
   if(keyCode==ENTER){
     String current = (String)editor.text.get(editor.ln);
     editor.text.set(editor.ln,current.substring(0,editor.carret));
@@ -341,8 +360,8 @@ void keyPressed(){
     editor.ln++;
     editor.carret=0;
   }
-  
-   if(keyCode==DELETE){
+
+  if(keyCode==DELETE){
 
     String current = (String)editor.text.get(editor.ln);
 
