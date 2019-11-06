@@ -21,7 +21,7 @@ boolean grid[][];
 float send[];
 
 void setup(){
-  size(320,320);
+  size(320,320,P2D);
   frameRate(60); 
 
   sounds = new SoundFile[tracks];
