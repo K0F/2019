@@ -28,7 +28,8 @@ void setup(){
 
   for(int i = 0 ; i < tracks ; i++){
     try{
-    sounds[i] = new SoundFile(this,names[i]+".mp3");
+    sounds[i] = new SoundFile(this,names[i]+".wav");
+    println(sounds[i].duration());
     }catch(Exception e){
       println(e);
     }
