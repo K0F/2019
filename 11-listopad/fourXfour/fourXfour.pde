@@ -1,3 +1,10 @@
+/*
+  the ways of resoring a certain states are always bit tricky
+  this tool has no proper use
+  it is basicly children (human) toy there is no known way how to breake it
+  enjoy doing whatever useful with it
+*/
+
 int num = 4;
 ArrayList discs;
 int x [] = {80,80,80,80};
@@ -12,7 +19,6 @@ void setup(){
 
 }
 
-
 void draw(){
   background(0);
 
@@ -23,10 +29,10 @@ void draw(){
 
 }
 
-
-
 class Disc{
   String bits;
+  float velikost = 15;
+  boolean rotating = false;
   int id;
   PVector pos;
   float rot;
@@ -40,36 +46,49 @@ class Disc{
   }
 
   void draw(){
-    rot += (rotT-rot)/3.98;
+    rot += (rotT-rot)/(15.00/4.0);
+    if(rotating){
+      if(abs(rot-rotT)<0.001){
+        rotating = false;
+    interpret();
+        rot = rotT = 0;
+
+      }
+    }
+
     pushMatrix();
     translate(pos.x,pos.y);
     rotate(rot*HALF_PI);
     stroke(255,200);
-    line(-10,0,10,0);
-    line(0,-10,0,10);
+    line(-velikost,0,velikost,0);
+    line(0,-velikost,0,velikost);
     pushMatrix();
     for(int i = 0 ; i < bits.length();i++){
       if((bits.charAt(i)+"").equals("1")){
         fill(255);
         noStroke();
-        arc(0,0,20,20,0,HALF_PI);
+        arc(0,0,2*velikost,2*velikost,0,HALF_PI);
       }
         rotate(HALF_PI);
     }
     popMatrix();
 
     popMatrix();
-    if(over()){
+    if(over()&&!rotating&&mousePressed){
+      rotating = true;
+      rotT+=1.0;
+      
+    }else if(over()){
       noStroke();
       fill(255,120);
-      ellipse(pos.x,pos.y,20,20);
+      ellipse(pos.x,pos.y,2*velikost,2*velikost);
     }
   }
 
   boolean over(){
 
     float d = dist(pos.x,pos.y,mouseX,mouseY);
-    if(d<15){
+    if(d<velikost*2){
       return true;
     }else{
       return false;
@@ -77,25 +96,16 @@ class Disc{
 
   }
 
-  String rotateL(){
+  String rotateM(int ammount){
     String tmp = "";
     for(int i = 0 ; i < bits.length();i++){
-      tmp += bits.charAt((i+bits.length()-1)%bits.length());
+      tmp += bits.charAt((i+bits.length()+ammount)%bits.length());
     }
     return tmp;
   }
 
-  String rotateR(){
-    String tmp = "";
-    for(int i = 0 ; i < bits.length();i++){
-      tmp += bits.charAt((i+1)%bits.length());
-    }
-    return tmp;
-  }
-
-
-  int interpret(){
-    return unbinary(bits);
+  void interpret(){
+    bits = rotateM(round(rot));
   }
 
 }
